@@ -1,5 +1,9 @@
 const PlayGround = () => {
-  return <div>playground</div>;
+  return (
+    <div className="playground">
+      <canvas className="canvas-pg" />
+    </div>
+  );
 };
 
 export default PlayGround;
