@@ -3,7 +3,7 @@
   grid-template-columns: 95vw 5vw;
   grid-template-rows: 100vh;
   overflow: hidden;
-  background-color: #252525;
+  background-color: #2e3440; /*#252525;*/
 }
 
 .toolbar {
@@ -20,8 +20,8 @@
 }
 
 .canvas-pg {
-  position: absolute;
-  width: 100%;
+  /*position: absolute;
+  width: 100%; */
 }
 
 .toolbar__list {
@@ -29,6 +29,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  width: 100%;
   padding: 0;
   list-style-type: none;
 }
@@ -45,6 +46,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 .toolbar__items div svg {

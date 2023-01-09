@@ -6,7 +6,7 @@ export const SidebarData = [
     title: "Select wall",
     icon: <SlCursor />,
     bgcolor: "#0097e5",
-    bcolor: "#000",
+    bcolor: "#0097e5",
   },
   {
     title: "Create wall",

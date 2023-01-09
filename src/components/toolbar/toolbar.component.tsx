@@ -8,9 +8,10 @@ const ToolBar = () => {
           return (
             <li className="toolbar__items" key={key}>
               <div
+                title={tool.title}
                 style={{
-                  backgroundColor: tool.bgcolor,
-                  borderColor: tool.bcolor,
+                  backgroundColor: tool.bgcolor || "none",
+                  borderColor: tool.bcolor || "none",
                 }}
               >
                 {tool.icon}
