@@ -38,7 +38,43 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     useCanvas();*/
   const [context, setContext] = useState<CanvasRenderingContext2D>();
   const [coordinates, setCoordinates] = useState<coordinatesTypes[]>([]);
+  const [currentPosition, setCurrentPosition] = useState<coordinatesTypes[]>(
+    []
+  );
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  const handleCanvasMouseMove = (event: any) => {
+    if (!canvasRef.current) return;
+    var offset = canvasRef.current.getBoundingClientRect();
+
+    setCurrentPosition([
+      { x: event.clientX - offset.left, y: event.clientY - offset.top },
+    ]);
+  };
+
+  const drawWalls = () => {
+    if (!context) return;
+    context?.clearRect(0, 0, 689, 537);
+
+    context.lineWidth = 1;
+    // for every array in the ry array
+    for (let index = 0; index < coordinates.length; index++) {
+      let l = coordinates[index];
+      // draw the circle
+      //drawCircle(l.x, l.y);
+      // draw the line
+      if (index > 0) {
+        let last = coordinates[index - 1];
+        let present = coordinates[index];
+        // /console.log("click", last.x, last.y);
+        context.beginPath();
+        context.moveTo(last.x, last.y);
+        context.lineTo(present.x, present.y);
+        context.strokeStyle = "brown";
+        context.stroke();
+      }
+    }
+  };
 
   const handleCanvasClick = (event: any) => {
     // on each click get current mouse location
@@ -75,28 +111,23 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
   }, [props.width]);
 
   useEffect(() => {
-    if (!context) return;
-    context?.clearRect(0, 0, 689, 537);
-
-    context.lineWidth = 1;
-    // for every array in the ry array
-    for (let index = 0; index < coordinates.length; index++) {
-      let l = coordinates[index];
-      // draw the circle
-      //drawCircle(l.x, l.y);
-      // draw the line
-      if (index > 0) {
-        let last = coordinates[index - 1];
-        let present = coordinates[index];
-        // /console.log("click", last.x, last.y);
-        context.beginPath();
-        context.moveTo(last.x, last.y);
-        context.lineTo(present.x, present.y);
-        context.strokeStyle = "brown";
-        context.stroke();
-      }
-    }
+    drawWalls();
   }, [coordinates]);
+
+  useEffect(() => {
+    if (coordinates.length > 0) {
+      const lastPoint = coordinates[coordinates.length - 1];
+      if (!context) return;
+      context.clearRect(0, 0, 689, 537);
+      drawWalls();
+      context.beginPath();
+
+      context.moveTo(lastPoint.x, lastPoint.y);
+      context.lineTo(currentPosition[0].x, currentPosition[0].y);
+      context.strokeStyle = "green";
+      context.stroke();
+    }
+  }, [currentPosition]);
 
   return (
     <canvas
@@ -105,6 +136,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       height={props.height}
       ref={canvasRef}
       onClick={handleCanvasClick}
+      onMouseMove={(e) => handleCanvasMouseMove(e)}
     />
   );
 };
