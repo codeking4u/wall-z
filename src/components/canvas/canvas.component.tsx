@@ -1,5 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 //import { useCanvas } from "../../hooks/useCanvas";
+
+import { eventToggleContext } from "./../../context/event-toggle.context";
 
 type CanvasProps = React.DetailedHTMLProps<
   React.CanvasHTMLAttributes<HTMLCanvasElement>,
@@ -11,28 +13,6 @@ interface coordinatesTypes {
   y: number;
 }
 
-/* const drawChart = (context:CanvasRenderingContext2D) => {
-  context.lineWidth = 1;
-  // for every array in the ry array
-  for (let index = 0; index < ry.length; index++) {
-    // for every point in the ry[index]
-    for (let i = 0; i < ry[index].length; i++) {
-      let l = ry[index][i];
-      // draw the circle
-      drawCircle(l.x, l.y);
-      // draw the line
-      if (i > 0) {
-        let last = ry[index][i - 1];
-        ctx.beginPath();
-        ctx.moveTo(last.x, last.y);
-        ctx.lineTo(l.x, l.y);
-        ctx.strokeStyle = "blue";
-        ctx.stroke();
-      }
-    }
-  }
-}; */
-
 const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
   /*const [coordinates, setCoordinates, canvasRef, canvasWidth, canvasHeight] =
     useCanvas();*/
@@ -41,10 +21,14 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
   const [currentPosition, setCurrentPosition] = useState<coordinatesTypes[]>(
     []
   );
+
+  const { wallEnabled } = useContext(eventToggleContext);
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const handleCanvasMouseMove = (event: any) => {
     if (!canvasRef.current) return;
+    if (!wallEnabled) return;
     var offset = canvasRef.current.getBoundingClientRect();
 
     setCurrentPosition([
@@ -77,6 +61,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
   };
 
   const handleCanvasClick = (event: any) => {
+    if (!wallEnabled) return;
     // on each click get current mouse location
     const currentCoord = { x: event.clientX, y: event.clientY };
     // add the newest mouse location to an array in state
@@ -85,13 +70,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     var offset = canvasRef.current.getBoundingClientRect();
     const x = event.clientX - offset.left;
     const y = event.clientY - offset.top;
-    console.log("state refresh", coordinates);
     setCoordinates((coordinates) => [...coordinates, { x: x, y: y }]);
-
-    console.log("coordinates", coordinates, { x: x, y: y });
-    // delete everything
-
-    console.log(currentCoord);
   };
 
   useEffect(() => {
@@ -115,7 +94,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
   }, [coordinates]);
 
   useEffect(() => {
-    if (coordinates.length > 0) {
+    if (coordinates.length && currentPosition.length) {
       const lastPoint = coordinates[coordinates.length - 1];
       if (!context) return;
       context.clearRect(0, 0, 689, 537);
@@ -128,6 +107,26 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       context.stroke();
     }
   }, [currentPosition]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    /* Remove the last wall when wall is disabled */
+
+    if (!wallEnabled) setCurrentPosition([]);
+    if (!context) return;
+    context.clearRect(0, 0, 689, 537);
+    drawWalls();
+
+    /* if (wallEnabled)
+      canvas.addEventListener("mousemove", handleCanvasMouseMove);
+    else canvas.removeEventListener("mousemove", handleCanvasMouseMove);
+
+    return () => {
+      console.log("removeEventListener");
+      canvas.removeEventListener("click", handleCanvasMouseMove);
+    }; */
+  }, [wallEnabled]);
 
   return (
     <canvas
