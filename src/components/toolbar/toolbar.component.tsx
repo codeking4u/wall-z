@@ -4,7 +4,7 @@ import { eventToggleContext } from "../../context/event-toggle.context";
 import { SidebarData } from "../../data/sidebar-data";
 
 const ToolBar = () => {
-  const { wallEnabled, setWallEnabled } = useContext(eventToggleContext);
+  const { toolEnabled, setToolEnabled } = useContext(eventToggleContext);
   return (
     <div className="toolbar">
       <ul className="toolbar__list">
@@ -14,8 +14,8 @@ const ToolBar = () => {
               className="toolbar__items"
               key={key}
               onClick={() => {
-                console.log("wallEnabled", wallEnabled);
-                setWallEnabled(!wallEnabled);
+                setToolEnabled(tool.toolType);
+                console.log("toolEnabled", toolEnabled);
               }}
             >
               <div

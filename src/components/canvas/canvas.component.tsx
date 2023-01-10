@@ -22,13 +22,14 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     []
   );
 
-  const { wallEnabled } = useContext(eventToggleContext);
+  const { toolEnabled } = useContext(eventToggleContext);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const handleCanvasMouseMove = (event: any) => {
     if (!canvasRef.current) return;
-    if (!wallEnabled) return;
+    if (!toolEnabled || toolEnabled == "DELETE_WALL") return;
+
     var offset = canvasRef.current.getBoundingClientRect();
 
     setCurrentPosition([
@@ -61,16 +62,14 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
   };
 
   const handleCanvasClick = (event: any) => {
-    if (!wallEnabled) return;
-    // on each click get current mouse location
-    const currentCoord = { x: event.clientX, y: event.clientY };
-    // add the newest mouse location to an array in state
-    //setCoordinates([...coordinates, currentCoord]);
-    if (!canvasRef.current) return;
-    var offset = canvasRef.current.getBoundingClientRect();
-    const x = event.clientX - offset.left;
-    const y = event.clientY - offset.top;
-    setCoordinates((coordinates) => [...coordinates, { x: x, y: y }]);
+    if (!toolEnabled) return;
+    if (toolEnabled == "CREATE_WALL") {
+      if (!canvasRef.current) return;
+      var offset = canvasRef.current.getBoundingClientRect();
+      const x = event.clientX - offset.left;
+      const y = event.clientY - offset.top;
+      setCoordinates((coordinates) => [...coordinates, { x: x, y: y }]);
+    }
   };
 
   useEffect(() => {
@@ -113,12 +112,12 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     if (!canvas) return;
     /* Remove the last wall when wall is disabled */
 
-    if (!wallEnabled) setCurrentPosition([]);
+    if (!toolEnabled || toolEnabled == "DELETE_WALL") setCurrentPosition([]);
     if (!context) return;
     context.clearRect(0, 0, 689, 537);
     drawWalls();
-
-    /* if (wallEnabled)
+    console.log("useeffect", toolEnabled);
+    /* if (toolEnabled)
       canvas.addEventListener("mousemove", handleCanvasMouseMove);
     else canvas.removeEventListener("mousemove", handleCanvasMouseMove);
 
@@ -126,7 +125,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       console.log("removeEventListener");
       canvas.removeEventListener("click", handleCanvasMouseMove);
     }; */
-  }, [wallEnabled]);
+  }, [toolEnabled]);
 
   return (
     <canvas

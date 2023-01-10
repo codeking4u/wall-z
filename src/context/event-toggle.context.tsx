@@ -4,21 +4,25 @@ type eventToggleProviderContextProps = {
   children: React.ReactNode;
 };
 
-type eventToggleContextProps = {
-  wallEnabled: boolean | null;
-  setWallEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+export type eventToggleContextProps = {
+  toolEnabled: "CREATE_WALL" | "DELETE_WALL" | null;
+  setToolEnabled: React.Dispatch<
+    React.SetStateAction<"CREATE_WALL" | "DELETE_WALL" | null>
+  >;
 };
 
 export const eventToggleContext = createContext<eventToggleContextProps>({
-  wallEnabled: false,
-  setWallEnabled: () => null,
+  toolEnabled: null,
+  setToolEnabled: () => null,
 });
 
 export const EventToggleProvider = ({
   children,
 }: eventToggleProviderContextProps) => {
-  const [wallEnabled, setWallEnabled] = useState<boolean>(false);
-  const value = { wallEnabled, setWallEnabled };
+  const [toolEnabled, setToolEnabled] = useState<
+    "CREATE_WALL" | "DELETE_WALL" | null
+  >(null);
+  const value = { toolEnabled, setToolEnabled };
   return (
     <eventToggleContext.Provider value={value}>
       {children}
