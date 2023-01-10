@@ -5,6 +5,7 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
 import { EventToggleProvider } from "./context/event-toggle.context";
+import { CoordinatesProvider } from "./context/coordinates.context";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -12,7 +13,9 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <EventToggleProvider>
-      <App />
+      <CoordinatesProvider>
+        <App />
+      </CoordinatesProvider>
     </EventToggleProvider>
   </React.StrictMode>
 );

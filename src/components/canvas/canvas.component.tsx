@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useContext } from "react";
-//import { useCanvas } from "../../hooks/useCanvas";
 
+import { coordinatesContext } from "./../../context/coordinates.context";
 import { eventToggleContext } from "./../../context/event-toggle.context";
 
 type CanvasProps = React.DetailedHTMLProps<
@@ -8,19 +8,18 @@ type CanvasProps = React.DetailedHTMLProps<
   HTMLCanvasElement
 >;
 
-interface coordinatesTypes {
-  x: number;
-  y: number;
-}
-
 const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
   /*const [coordinates, setCoordinates, canvasRef, canvasWidth, canvasHeight] =
     useCanvas();*/
   const [context, setContext] = useState<CanvasRenderingContext2D>();
-  const [coordinates, setCoordinates] = useState<coordinatesTypes[]>([]);
-  const [currentPosition, setCurrentPosition] = useState<coordinatesTypes[]>(
-    []
-  );
+  const {
+    wallCoordinates,
+    setWallCoordinates,
+    currentPosition,
+    setCurrentPosition,
+    lastReference,
+    setLastReference,
+  } = useContext(coordinatesContext);
 
   const { toolEnabled } = useContext(eventToggleContext);
 
@@ -41,22 +40,23 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     if (!context) return;
     context?.clearRect(0, 0, 689, 537);
 
-    context.lineWidth = 1;
+    context.lineWidth = 5;
     // for every array in the ry array
-    for (let index = 0; index < coordinates.length; index++) {
-      let l = coordinates[index];
+    for (let structure = 0; structure <= wallCoordinates.length; structure++) {
+      let wallBody = wallCoordinates[structure];
       // draw the circle
       //drawCircle(l.x, l.y);
       // draw the line
-      if (index > 0) {
-        let last = coordinates[index - 1];
-        let present = coordinates[index];
-        // /console.log("click", last.x, last.y);
-        context.beginPath();
-        context.moveTo(last.x, last.y);
-        context.lineTo(present.x, present.y);
-        context.strokeStyle = "brown";
-        context.stroke();
+      for (let wall = 0; wall < wallBody?.length; wall++) {
+        if (wall > 0) {
+          let last = wallBody[wall - 1];
+          let present = wallBody[wall];
+          context.beginPath();
+          context.moveTo(last.x, last.y);
+          context.lineTo(present.x, present.y);
+          context.strokeStyle = "brown";
+          context.stroke();
+        }
       }
     }
   };
@@ -68,7 +68,19 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       var offset = canvasRef.current.getBoundingClientRect();
       const x = event.clientX - offset.left;
       const y = event.clientY - offset.top;
-      setCoordinates((coordinates) => [...coordinates, { x: x, y: y }]);
+      if (lastReference.length) {
+        /* add to last structure */
+        setWallCoordinates((cord) => [
+          ...cord.slice(0, -1),
+          [...cord[cord.length - 1], { x: x, y: y }],
+        ]);
+      } else {
+        /* new structure */
+        setWallCoordinates((cord) => [...cord, [{ x: x, y: y }]]);
+      }
+
+      setLastReference([{ x: x, y: y }]);
+      console.log(wallCoordinates);
     }
   };
 
@@ -90,11 +102,15 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
   useEffect(() => {
     drawWalls();
-  }, [coordinates]);
+  }, [wallCoordinates]);
 
   useEffect(() => {
-    if (coordinates.length && currentPosition.length) {
-      const lastPoint = coordinates[coordinates.length - 1];
+    if (
+      wallCoordinates.length &&
+      currentPosition.length &&
+      lastReference.length
+    ) {
+      const lastPoint = lastReference[0];
       if (!context) return;
       context.clearRect(0, 0, 689, 537);
       drawWalls();
@@ -112,7 +128,10 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     if (!canvas) return;
     /* Remove the last wall when wall is disabled */
 
-    if (!toolEnabled || toolEnabled == "DELETE_WALL") setCurrentPosition([]);
+    if (!toolEnabled || toolEnabled == "DELETE_WALL") {
+      setCurrentPosition([]);
+      setLastReference([]);
+    }
     if (!context) return;
     context.clearRect(0, 0, 689, 537);
     drawWalls();
