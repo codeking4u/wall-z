@@ -140,7 +140,6 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     ) {
       const lastPoint = lastReference[0];
       if (!context) return;
-      context.clearRect(0, 0, width, height);
       drawWalls();
       context.beginPath();
 
@@ -148,6 +147,8 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       context.lineTo(currentPosition[0].x, currentPosition[0].y);
       context.strokeStyle = "green";
       context.stroke();
+    } else {
+      //drawWalls();
     }
   }, [currentPosition]);
 
@@ -160,8 +161,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       setCurrentPosition([]);
       setLastReference([]);
     }
-    if (!context) return;
-    context.clearRect(0, 0, width, height);
+
     drawWalls();
     console.log("useeffect", toolEnabled);
     /* if (toolEnabled)
@@ -172,7 +172,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       console.log("removeEventListener");
       canvas.removeEventListener("click", handleCanvasMouseMove);
     }; */
-  }, [toolEnabled, highLight]);
+  }, [toolEnabled, highLight, lastReference]);
 
   useEffect(() => {
     const deleteLine = (e: any) => {
@@ -197,7 +197,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
       if (["27", "Escape"].includes(e.code)) {
         setCurrentPosition([]);
-        setToolEnabled(null);
+        setLastReference([]);
       }
     };
     window.addEventListener("keydown", deleteLine);
