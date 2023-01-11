@@ -6,17 +6,20 @@ import reportWebVitals from "./reportWebVitals";
 
 import { EventToggleProvider } from "./context/event-toggle.context";
 import { CoordinatesProvider } from "./context/coordinates.context";
+import { CanvasProvider } from "./context/canvas.context";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <EventToggleProvider>
-      <CoordinatesProvider>
-        <App />
-      </CoordinatesProvider>
-    </EventToggleProvider>
+    <CanvasProvider>
+      <EventToggleProvider>
+        <CoordinatesProvider>
+          <App />
+        </CoordinatesProvider>
+      </EventToggleProvider>
+    </CanvasProvider>
   </React.StrictMode>
 );
 

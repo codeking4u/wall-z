@@ -18,6 +18,10 @@ export type coordinatesContextProps = {
   setCurrentPosition: React.Dispatch<React.SetStateAction<coordinatesTypes[]>>;
   lastReference: coordinatesTypes[];
   setLastReference: React.Dispatch<React.SetStateAction<coordinatesTypes[]>>;
+  highLight: coordinatesTypes[];
+  setHighLight: React.Dispatch<React.SetStateAction<coordinatesTypes[]>>;
+  selectedLine: coordinatesTypes[];
+  setSelectedLine: React.Dispatch<React.SetStateAction<coordinatesTypes[]>>;
 };
 
 export const coordinatesContext = createContext<coordinatesContextProps>({
@@ -27,6 +31,10 @@ export const coordinatesContext = createContext<coordinatesContextProps>({
   setCurrentPosition: () => null,
   lastReference: [],
   setLastReference: () => null,
+  highLight: [],
+  setHighLight: () => null,
+  selectedLine: [],
+  setSelectedLine: () => null,
 });
 
 export const CoordinatesProvider = ({
@@ -39,6 +47,8 @@ export const CoordinatesProvider = ({
     []
   );
   const [lastReference, setLastReference] = useState<coordinatesTypes[]>([]);
+  const [highLight, setHighLight] = useState<coordinatesTypes[]>([]);
+  const [selectedLine, setSelectedLine] = useState<coordinatesTypes[]>([]);
 
   const value = {
     wallCoordinates,
@@ -47,6 +57,10 @@ export const CoordinatesProvider = ({
     setCurrentPosition,
     lastReference,
     setLastReference,
+    highLight,
+    setHighLight,
+    selectedLine,
+    setSelectedLine,
   };
   return (
     <coordinatesContext.Provider value={value}>

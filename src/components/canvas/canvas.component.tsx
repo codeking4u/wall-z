@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useContext } from "react";
 
 import { coordinatesContext } from "./../../context/coordinates.context";
 import { eventToggleContext } from "./../../context/event-toggle.context";
+import { canvasContext } from "./../../context/canvas.context";
 
 type CanvasProps = React.DetailedHTMLProps<
   React.CanvasHTMLAttributes<HTMLCanvasElement>,
@@ -19,7 +20,13 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     setCurrentPosition,
     lastReference,
     setLastReference,
+    highLight,
+    setHighLight,
+    selectedLine,
+    setSelectedLine,
   } = useContext(coordinatesContext);
+
+  const { width, height } = useContext(canvasContext);
 
   const { toolEnabled } = useContext(eventToggleContext);
 
@@ -38,9 +45,10 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
   const drawWalls = () => {
     if (!context) return;
-    context?.clearRect(0, 0, 689, 537);
+    context?.clearRect(0, 0, width, height);
 
     context.lineWidth = 5;
+    const highLightVal = highLight[0];
     // for every array in the ry array
     for (let structure = 0; structure <= wallCoordinates.length; structure++) {
       let wallBody = wallCoordinates[structure];
@@ -54,8 +62,20 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
           context.beginPath();
           context.moveTo(last.x, last.y);
           context.lineTo(present.x, present.y);
-          context.strokeStyle = "brown";
+          context.strokeStyle = "orange";
+          if (
+            highLightVal &&
+            context.isPointInStroke(highLightVal.x, highLightVal.y)
+          ) {
+            context.strokeStyle = "rgb(0 151 229)";
+            setSelectedLine([
+              { x: last.x, y: last.y },
+              { x: present.x, y: present.y },
+            ]);
+          }
           context.stroke();
+
+          console.log("highLightVal" + JSON.stringify(selectedLine));
         }
       }
     }
@@ -63,9 +83,10 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
   const handleCanvasClick = (event: any) => {
     if (!toolEnabled) return;
+    if (!canvasRef.current) return;
+    var offset = canvasRef.current.getBoundingClientRect();
+
     if (toolEnabled == "CREATE_WALL") {
-      if (!canvasRef.current) return;
-      var offset = canvasRef.current.getBoundingClientRect();
       const x = event.clientX - offset.left;
       const y = event.clientY - offset.top;
       if (lastReference.length) {
@@ -81,6 +102,13 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
       setLastReference([{ x: x, y: y }]);
       console.log(wallCoordinates);
+    }
+
+    if (toolEnabled == "DELETE_WALL") {
+      // adjust to proper mouse position
+      const pointX = event.clientX - offset.left;
+      const pointY = event.clientY - offset.top;
+      setHighLight([{ x: pointX, y: pointY }]);
     }
   };
 
@@ -98,7 +126,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     //context.fillStyle = "brown";
     //context.fillRect(0, 0, 100, 100);
     console.log("loaded");
-  }, [props.width]);
+  }, [width]);
 
   useEffect(() => {
     drawWalls();
@@ -112,7 +140,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     ) {
       const lastPoint = lastReference[0];
       if (!context) return;
-      context.clearRect(0, 0, 689, 537);
+      context.clearRect(0, 0, width, height);
       drawWalls();
       context.beginPath();
 
@@ -133,7 +161,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       setLastReference([]);
     }
     if (!context) return;
-    context.clearRect(0, 0, 689, 537);
+    context.clearRect(0, 0, width, height);
     drawWalls();
     console.log("useeffect", toolEnabled);
     /* if (toolEnabled)
@@ -144,13 +172,38 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       console.log("removeEventListener");
       canvas.removeEventListener("click", handleCanvasMouseMove);
     }; */
-  }, [toolEnabled]);
+  }, [toolEnabled, highLight]);
+
+  useEffect(() => {
+    const deleteLine = (e: any) => {
+      if (["8", "46", "Backspace", "Delete"].includes(e.code)) {
+        console.log(selectedLine);
+        if (!selectedLine.length) return;
+        console.log("delete");
+        /* del and backspace */
+        const updatedCoordinates: any = [];
+        wallCoordinates.forEach((struc) => {
+          const cordsArr = struc.filter((cords) => {
+            if (cords.x != selectedLine[0].x) {
+              return cords;
+            }
+          });
+          updatedCoordinates.push(cordsArr);
+        });
+
+        setWallCoordinates([...updatedCoordinates]);
+      }
+    };
+    window.addEventListener("keydown", deleteLine);
+
+    return () => window.removeEventListener("keydown", deleteLine);
+  }, []);
 
   return (
     <canvas
       className="canvas-pg"
-      width={props.width}
-      height={props.height}
+      width={width}
+      height={height}
       ref={canvasRef}
       onClick={handleCanvasClick}
       onMouseMove={(e) => handleCanvasMouseMove(e)}
