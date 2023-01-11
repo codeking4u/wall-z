@@ -28,7 +28,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
   const { width, height } = useContext(canvasContext);
 
-  const { toolEnabled } = useContext(eventToggleContext);
+  const { toolEnabled, setToolEnabled } = useContext(eventToggleContext);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -176,6 +176,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
   useEffect(() => {
     const deleteLine = (e: any) => {
+      console.log(e.code);
       if (["8", "46", "Backspace", "Delete"].includes(e.code)) {
         console.log(selectedLine);
         if (!selectedLine.length) return;
@@ -192,6 +193,11 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
         });
 
         setWallCoordinates([...updatedCoordinates]);
+      }
+
+      if (["27", "Escape"].includes(e.code)) {
+        setCurrentPosition([]);
+        setToolEnabled(null);
       }
     };
     window.addEventListener("keydown", deleteLine);
