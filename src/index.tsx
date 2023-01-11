@@ -7,6 +7,7 @@ import reportWebVitals from "./reportWebVitals";
 import { EventToggleProvider } from "./context/event-toggle.context";
 import { CoordinatesProvider } from "./context/coordinates.context";
 import { CanvasProvider } from "./context/canvas.context";
+import { UndoRedoProvider } from "./context/undoredo.context";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -16,7 +17,9 @@ root.render(
     <CanvasProvider>
       <EventToggleProvider>
         <CoordinatesProvider>
-          <App />
+          <UndoRedoProvider>
+            <App />
+          </UndoRedoProvider>
         </CoordinatesProvider>
       </EventToggleProvider>
     </CanvasProvider>

@@ -11,7 +11,7 @@ export type eventToggleContextProps = {
   >;
 };
 
-export const eventToggleContext = createContext<eventToggleContextProps>({
+export const EventToggleContext = createContext<eventToggleContextProps>({
   toolEnabled: null,
   setToolEnabled: () => null,
 });
@@ -24,8 +24,8 @@ export const EventToggleProvider = ({
   >(null);
   const value = { toolEnabled, setToolEnabled };
   return (
-    <eventToggleContext.Provider value={value}>
+    <EventToggleContext.Provider value={value}>
       {children}
-    </eventToggleContext.Provider>
+    </EventToggleContext.Provider>
   );
 };

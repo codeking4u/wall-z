@@ -1,10 +1,10 @@
 import { useContext } from "react";
-import { eventToggleContext } from "../../context/event-toggle.context";
+import { EventToggleContext } from "../../context/event-toggle.context";
 
 import { SidebarData } from "../../data/sidebar-data";
 
 const ToolBar = () => {
-  const { toolEnabled, setToolEnabled } = useContext(eventToggleContext);
+  const { toolEnabled, setToolEnabled } = useContext(EventToggleContext);
   return (
     <div className="toolbar">
       <ul className="toolbar__list">

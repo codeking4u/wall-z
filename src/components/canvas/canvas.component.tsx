@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState, useContext } from "react";
 
 import {
-  coordinatesContext,
+  CoordinatesContext,
   coordinatesTypes,
 } from "./../../context/coordinates.context";
-import { eventToggleContext } from "./../../context/event-toggle.context";
-import { canvasContext } from "./../../context/canvas.context";
+import { EventToggleContext } from "./../../context/event-toggle.context";
+import { CanvasContext } from "./../../context/canvas.context";
+import { UndoRedoContext } from "./../../context/undoredo.context";
 
 type CanvasProps = React.DetailedHTMLProps<
   React.CanvasHTMLAttributes<HTMLCanvasElement>,
@@ -27,11 +28,13 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     setHighLight,
     selectedLine,
     setSelectedLine,
-  } = useContext(coordinatesContext);
+  } = useContext(CoordinatesContext);
 
-  const { width, height } = useContext(canvasContext);
+  const { width, height } = useContext(CanvasContext);
 
-  const { toolEnabled, setToolEnabled } = useContext(eventToggleContext);
+  const { toolEnabled, setToolEnabled } = useContext(EventToggleContext);
+  const { undoStack, setUndoStack, redoStack, setRedoStack } =
+    useContext(UndoRedoContext);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -211,11 +214,12 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
   useEffect(() => {
     const deleteLine = (e: any) => {
       console.log(e.code);
+
       if (["8", "46", "Backspace", "Delete"].includes(e.code)) {
         console.log("selectedLine");
         console.log(selectedLine);
         if (!selectedLine.length) return;
-        console.log("delete");
+
         /* del and backspace */
         const updatedCoordinates: coordinatesTypes[][] = [];
         console.log("wallCoordinates");
@@ -240,22 +244,46 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
         setWallCoordinates([...updatedCoordinates]);
 
         setHighLight([]);
+        setUndoStack((coords) => [...coords, selectedLine]);
       }
 
       if (["27", "Escape"].includes(e.code)) {
         setCurrentPosition([]);
         setLastReference([]);
       }
+
+      if (e.key === "y" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        /* REDO */
+        if (redoStack.length) {
+          const latestWall = redoStack[redoStack.length - 1];
+          setRedoStack((coords) => [...coords.slice(0, -1)]);
+          latestWall && setWallCoordinates((coords) => [...coords, latestWall]);
+        }
+      }
+
+      if (e.key === "z" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        /* UNDO */
+        console.log("undo");
+        if (undoStack.length) {
+          const lastWall = undoStack[undoStack.length - 1];
+          setWallCoordinates((coords) => [...coords, lastWall]);
+          setUndoStack((coords) => [...coords.slice(0, -1)]);
+        } else {
+          setRedoStack((coords) => [
+            ...coords,
+            wallCoordinates[wallCoordinates.length - 1],
+          ]);
+
+          setWallCoordinates((coords) => [...coords.slice(0, -1)]);
+        }
+      }
     };
     window.addEventListener("keydown", deleteLine);
 
     return () => window.removeEventListener("keydown", deleteLine);
-  }, [selectedLine]);
-
-  useEffect(() => {
-    console.log("Line has been selected");
-    console.log(selectedLine);
-  }, [selectedLine]);
+  }, [selectedLine, undoStack, redoStack]);
 
   return (
     <canvas

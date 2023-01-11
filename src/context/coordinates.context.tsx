@@ -26,7 +26,7 @@ export type coordinatesContextProps = {
   setSelectedLine: React.Dispatch<React.SetStateAction<coordinatesTypes[]>>;
 };
 
-export const coordinatesContext = createContext<coordinatesContextProps>({
+export const CoordinatesContext = createContext<coordinatesContextProps>({
   wallCoordinates: [],
   setWallCoordinates: () => null,
   currentPosition: [],
@@ -65,8 +65,8 @@ export const CoordinatesProvider = ({
     setSelectedLine,
   };
   return (
-    <coordinatesContext.Provider value={value}>
+    <CoordinatesContext.Provider value={value}>
       {children}
-    </coordinatesContext.Provider>
+    </CoordinatesContext.Provider>
   );
 };

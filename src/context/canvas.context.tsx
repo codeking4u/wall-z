@@ -11,7 +11,7 @@ export type canvasContextProps = {
   setHeight: React.Dispatch<React.SetStateAction<number>>;
 };
 
-export const canvasContext = createContext<canvasContextProps>({
+export const CanvasContext = createContext<canvasContextProps>({
   width: 0,
   setWidth: () => null,
   height: 0,
@@ -23,6 +23,6 @@ export const CanvasProvider = ({ children }: canvasProviderContextProps) => {
   const [height, setHeight] = useState<number>(500);
   const value = { width, height, setWidth, setHeight };
   return (
-    <canvasContext.Provider value={value}>{children}</canvasContext.Provider>
+    <CanvasContext.Provider value={value}>{children}</CanvasContext.Provider>
   );
 };
