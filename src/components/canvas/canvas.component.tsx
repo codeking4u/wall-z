@@ -80,6 +80,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
         context.beginPath();
         context.moveTo(start.x, start.y);
         context.lineTo(end.x, end.y);
+        context.lineCap = "round";
         context.strokeStyle = "orange";
         if (
           highLightVal &&
@@ -100,6 +101,10 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
   };
 
   const handleCanvasClick = (event: any) => {
+    /* reset undoredo when new clicks are observed */
+    setUndoStack([]);
+    setRedoStack([]);
+
     if (!toolEnabled) return;
     if (!canvasRef.current) return;
     var offset = canvasRef.current.getBoundingClientRect();
@@ -269,12 +274,17 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
         if (undoStack.length) {
           const lastWall = undoStack[undoStack.length - 1];
           setWallCoordinates((coords) => [...coords, lastWall]);
-          setUndoStack((coords) => [...coords.slice(0, -1)]);
-        } else {
           setRedoStack((coords) => [
             ...coords,
-            wallCoordinates[wallCoordinates.length - 1],
+            undoStack[undoStack.length - 1],
           ]);
+          setUndoStack((coords) => [...coords.slice(0, -1)]);
+        } else {
+          wallCoordinates.length &&
+            setRedoStack((coords) => [
+              ...coords,
+              wallCoordinates[wallCoordinates.length - 1],
+            ]);
 
           setWallCoordinates((coords) => [...coords.slice(0, -1)]);
         }
