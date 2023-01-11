@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState, useContext } from "react";
 
-import { coordinatesContext } from "./../../context/coordinates.context";
+import {
+  coordinatesContext,
+  coordinatesTypes,
+} from "./../../context/coordinates.context";
 import { eventToggleContext } from "./../../context/event-toggle.context";
 import { canvasContext } from "./../../context/canvas.context";
 
@@ -55,29 +58,41 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       // draw the circle
       //drawCircle(l.x, l.y);
       // draw the line
-      for (let wall = 0; wall < wallBody?.length; wall++) {
-        if (wall > 0) {
-          let last = wallBody[wall - 1];
-          let present = wallBody[wall];
-          context.beginPath();
-          context.moveTo(last.x, last.y);
-          context.lineTo(present.x, present.y);
-          context.strokeStyle = "orange";
-          if (
-            highLightVal &&
-            context.isPointInStroke(highLightVal.x, highLightVal.y)
-          ) {
-            context.strokeStyle = "rgb(0 151 229)";
-            setSelectedLine([
-              { x: last.x, y: last.y },
-              { x: present.x, y: present.y },
-            ]);
-          }
-          context.stroke();
-
-          console.log("highLightVal" + JSON.stringify(selectedLine));
+      //for (let wall = 0; wall < wallBody?.length; wall++) {
+      if (wallBody?.length == 2) {
+        let start = wallBody[0];
+        let end = wallBody[1];
+        /* console.log("new wall");
+        if (
+          selectedLine.length &&
+          selectedLine[0].x == start.x &&
+          selectedLine[0].y == start.y &&
+          selectedLine[1].x == end.x &&
+          selectedLine[1].y == end.y
+        ) {
+          console.log(`Line to be ignored ${selectedLine}`);
+          continue;
         }
+        console.log("draw line starts here"); */
+        context.beginPath();
+        context.moveTo(start.x, start.y);
+        context.lineTo(end.x, end.y);
+        context.strokeStyle = "orange";
+        if (
+          highLightVal &&
+          context.isPointInStroke(highLightVal.x, highLightVal.y)
+        ) {
+          context.strokeStyle = "rgb(0 151 229)";
+          setSelectedLine([
+            { x: start.x, y: start.y },
+            { x: end.x, y: end.y },
+          ]);
+        }
+        context.stroke();
+
+        console.log("highLightVal" + JSON.stringify(selectedLine));
       }
+      //}
     }
   };
 
@@ -89,19 +104,38 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     if (toolEnabled == "CREATE_WALL") {
       const x = event.clientX - offset.left;
       const y = event.clientY - offset.top;
-      if (lastReference.length) {
-        /* add to last structure */
-        setWallCoordinates((cord) => [
+      if (wallCoordinates.length) {
+        /* wall already initiated */
+        setWallCoordinates(
+          (cord) => {
+            if (cord[cord.length - 1].length == 1) {
+              if (lastReference.length) {
+                /* if lastReference is present then continue drawing from last coordinate */
+                return [
+                  ...cord.slice(0, -1),
+                  [...cord[cord.length - 1], { x: x, y: y }],
+                  [{ x: x, y: y }],
+                ];
+              } else {
+                /* new structure */
+                return [...cord, [{ x: x, y: y }]];
+              }
+            } else {
+              return [...cord, [{ x: x, y: y }]];
+            }
+          }
+          /* [
           ...cord.slice(0, -1),
-          [...cord[cord.length - 1], { x: x, y: y }],
-        ]);
+          [...cord[cord.length - 1], [{ x: x, y: y }]],
+        ] */
+        );
       } else {
         /* new structure */
-        setWallCoordinates((cord) => [...cord, [{ x: x, y: y }]]);
+        setWallCoordinates([[{ x: x, y: y }]]);
       }
 
       setLastReference([{ x: x, y: y }]);
-      console.log(wallCoordinates);
+      console.log("wallCoordinates " + JSON.stringify(wallCoordinates));
     }
 
     if (toolEnabled == "DELETE_WALL") {
@@ -159,7 +193,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
     if (!toolEnabled || toolEnabled == "DELETE_WALL") {
       setCurrentPosition([]);
-      setLastReference([]);
+      //setLastReference([]);
     }
 
     drawWalls();
@@ -178,21 +212,34 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     const deleteLine = (e: any) => {
       console.log(e.code);
       if (["8", "46", "Backspace", "Delete"].includes(e.code)) {
+        console.log("selectedLine");
         console.log(selectedLine);
         if (!selectedLine.length) return;
         console.log("delete");
         /* del and backspace */
-        const updatedCoordinates: any = [];
-        wallCoordinates.forEach((struc) => {
-          const cordsArr = struc.filter((cords) => {
-            if (cords.x != selectedLine[0].x) {
-              return cords;
-            }
-          });
-          updatedCoordinates.push(cordsArr);
+        const updatedCoordinates: coordinatesTypes[][] = [];
+        console.log("wallCoordinates");
+        console.log(wallCoordinates);
+        wallCoordinates.forEach((wall) => {
+          console.log(wall, selectedLine);
+
+          if (
+            wall.length == 2 &&
+            wall[0].x != selectedLine[0].x &&
+            wall[0].y != selectedLine[0].y &&
+            wall[1].x != selectedLine[1].x &&
+            wall[1].y != selectedLine[1].y
+          ) {
+            updatedCoordinates.push(wall);
+          }
         });
 
+        console.log("updatedCoordinates");
+        console.log([...updatedCoordinates]);
+
         setWallCoordinates([...updatedCoordinates]);
+
+        setHighLight([]);
       }
 
       if (["27", "Escape"].includes(e.code)) {
@@ -203,7 +250,12 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     window.addEventListener("keydown", deleteLine);
 
     return () => window.removeEventListener("keydown", deleteLine);
-  }, []);
+  }, [selectedLine]);
+
+  useEffect(() => {
+    console.log("Line has been selected");
+    console.log(selectedLine);
+  }, [selectedLine]);
 
   return (
     <canvas

@@ -4,10 +4,12 @@ type coordinatesProviderContextProps = {
   children: React.ReactNode;
 };
 
-type coordinatesTypes = {
+export type coordinatesTypes = {
   x: number;
   y: number;
 };
+
+type wallTypes = [coordinatesTypes, coordinatesTypes];
 
 export type coordinatesContextProps = {
   wallCoordinates: coordinatesTypes[][];
