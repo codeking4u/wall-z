@@ -68,7 +68,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
     //addImage(context);
 
-    context.lineWidth = 5;
+    context.lineWidth = 7;
     const highLightVal = highLight[0];
     // for every array in the ry array
     for (let structure = 0; structure <= wallCoordinates.length; structure++) {

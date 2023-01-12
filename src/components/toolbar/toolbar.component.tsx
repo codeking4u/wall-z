@@ -15,10 +15,10 @@ const ToolBar = () => {
               key={key}
               onClick={() => {
                 setToolEnabled(tool.toolType);
-                console.log("toolEnabled", toolEnabled);
               }}
             >
               <div
+                className={toolEnabled == tool.toolType ? "active" : ""}
                 title={tool.title}
                 style={{
                   backgroundColor: tool.bgcolor || "none",
