@@ -6,7 +6,7 @@ import { CanvasContext } from "../../context/canvas.context";
 const PlayGround = () => {
   const pgRef = useRef<HTMLDivElement | null>(null);
 
-  const { width, setWidth, height, setHeight } = useContext(CanvasContext);
+  const { setWidth, setHeight } = useContext(CanvasContext);
 
   useEffect(() => {
     setWidth(pgRef.current?.offsetWidth || 700);

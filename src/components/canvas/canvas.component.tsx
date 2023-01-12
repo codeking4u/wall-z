@@ -16,9 +16,8 @@ type CanvasProps = React.DetailedHTMLProps<
 >;
 
 const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
-  /*const [coordinates, setCoordinates, canvasRef, canvasWidth, canvasHeight] =
-    useCanvas();*/
   const [context, setContext] = useState<CanvasRenderingContext2D>();
+
   const {
     wallCoordinates,
     setWallCoordinates,
@@ -34,7 +33,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
   const { width, height } = useContext(CanvasContext);
 
-  const { toolEnabled, setToolEnabled } = useContext(EventToggleContext);
+  const { toolEnabled } = useContext(EventToggleContext);
   const { undoStack, setUndoStack, redoStack, setRedoStack } =
     useContext(UndoRedoContext);
 
@@ -51,52 +50,26 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     ]);
   };
 
-  const addImage = (context: CanvasRenderingContext2D) => {
-    var background = new window.Image();
-    background.src = "./../assets/Sample_Floorplan.jpg";
-    console.log("image ouside" + width, height);
-    // Make sure the image is loaded first otherwise nothing will draw.
-    background.onload = function () {
-      console.log("image" + width, height);
-      context.drawImage(background, width, height);
-    };
-  };
-
   const drawWalls = () => {
     if (!context) return;
     context?.clearRect(0, 0, width, height);
 
-    //addImage(context);
-
     context.lineWidth = 7;
     const highLightVal = highLight[0];
-    // for every array in the ry array
+
     for (let structure = 0; structure <= wallCoordinates.length; structure++) {
       let wallBody = wallCoordinates[structure];
-      // draw the circle
-      //drawCircle(l.x, l.y);
-      // draw the line
-      //for (let wall = 0; wall < wallBody?.length; wall++) {
+
       if (wallBody?.length == 2) {
         let start = wallBody[0];
         let end = wallBody[1];
-        /* console.log("new wall");
-        if (
-          selectedLine.length &&
-          selectedLine[0].x == start.x &&
-          selectedLine[0].y == start.y &&
-          selectedLine[1].x == end.x &&
-          selectedLine[1].y == end.y
-        ) {
-          console.log(`Line to be ignored ${selectedLine}`);
-          continue;
-        }
-        console.log("draw line starts here"); */
+
         context.beginPath();
         context.moveTo(start.x, start.y);
         context.lineTo(end.x, end.y);
         context.lineCap = "round";
         context.strokeStyle = "orange";
+
         if (
           highLightVal &&
           context.isPointInStroke(highLightVal.x, highLightVal.y)
@@ -129,29 +102,23 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       const y = event.clientY - offset.top;
       if (wallCoordinates.length) {
         /* wall already initiated */
-        setWallCoordinates(
-          (cord) => {
-            if (cord[cord.length - 1].length == 1) {
-              if (lastReference.length) {
-                /* if lastReference is present then continue drawing from last coordinate */
-                return [
-                  ...cord.slice(0, -1),
-                  [...cord[cord.length - 1], { x: x, y: y }],
-                  [{ x: x, y: y }],
-                ];
-              } else {
-                /* new structure */
-                return [...cord, [{ x: x, y: y }]];
-              }
+        setWallCoordinates((cord) => {
+          if (cord[cord.length - 1].length == 1) {
+            if (lastReference.length) {
+              /* if lastReference is present then continue drawing from last coordinate */
+              return [
+                ...cord.slice(0, -1),
+                [...cord[cord.length - 1], { x: x, y: y }],
+                [{ x: x, y: y }],
+              ];
             } else {
+              /* new structure */
               return [...cord, [{ x: x, y: y }]];
             }
+          } else {
+            return [...cord, [{ x: x, y: y }]];
           }
-          /* [
-          ...cord.slice(0, -1),
-          [...cord[cord.length - 1], [{ x: x, y: y }]],
-        ] */
-        );
+        });
       } else {
         /* new structure */
         setWallCoordinates([[{ x: x, y: y }]]);
@@ -173,16 +140,9 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     const canvas = canvasRef.current;
 
     if (!canvas) return;
-    //const dpi = window.devicePixelRatio;
     const context = canvas.getContext("2d");
     if (!context) return;
     setContext(context);
-    //context.scale(dpi, dpi);
-    //context.canvas.width = pgRef.current?.offsetWidth || 1000;
-    //context.canvas.height = pgRef.current?.offsetHeight || 800;
-    //context.fillStyle = "brown";
-    //context.fillRect(0, 0, 100, 100);
-    console.log("loaded");
   }, [width]);
 
   useEffect(() => {
@@ -204,8 +164,6 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       context.lineTo(currentPosition[0].x, currentPosition[0].y);
       context.strokeStyle = "green";
       context.stroke();
-    } else {
-      //drawWalls();
     }
   }, [currentPosition]);
 
@@ -216,19 +174,9 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
     if (!toolEnabled || toolEnabled == "DELETE_WALL") {
       setCurrentPosition([]);
-      //setLastReference([]);
     }
 
     drawWalls();
-    console.log("useeffect", toolEnabled);
-    /* if (toolEnabled)
-      canvas.addEventListener("mousemove", handleCanvasMouseMove);
-    else canvas.removeEventListener("mousemove", handleCanvasMouseMove);
-
-    return () => {
-      console.log("removeEventListener");
-      canvas.removeEventListener("click", handleCanvasMouseMove);
-    }; */
   }, [toolEnabled, highLight, lastReference]);
 
   useEffect(() => {
@@ -310,13 +258,9 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     return () => window.removeEventListener("keydown", deleteLine);
   }, [selectedLine, undoStack, redoStack]);
 
-  useEffect(() => {
-    addImage(context!);
-  }, [context]);
-
   return (
     <canvas
-      className="canvas-pg"
+      className={"canvas-pg " + toolEnabled?.toLowerCase()}
       width={width}
       height={height}
       ref={canvasRef}

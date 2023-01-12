@@ -25,6 +25,14 @@
   border-radius: 20px;
 }
 
+.canvas-pg.create_wall:hover {
+  cursor: crosshair;
+}
+
+.canvas-pg.delete_wall:hover {
+  cursor: pointer;
+}
+
 .toolbar__list {
   display: flex;
   flex-direction: column;
