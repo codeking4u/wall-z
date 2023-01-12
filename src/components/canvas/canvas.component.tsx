@@ -81,23 +81,20 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
           ]);
         }
         context.stroke();
-
-        console.log("highLightVal" + JSON.stringify(selectedLine));
       }
-      //}
     }
   };
 
   const handleCanvasClick = (event: any) => {
     /* reset undoredo when new clicks are observed */
-    setUndoStack([]);
-    setRedoStack([]);
 
     if (!toolEnabled) return;
     if (!canvasRef.current) return;
     var offset = canvasRef.current.getBoundingClientRect();
 
     if (toolEnabled == "CREATE_WALL") {
+      setUndoStack([]);
+      setRedoStack([]);
       const x = event.clientX - offset.left;
       const y = event.clientY - offset.top;
       if (wallCoordinates.length) {
@@ -196,10 +193,9 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
           console.log(wall, selectedLine);
 
           if (
-            wall.length == 2 &&
-            wall[0].x != selectedLine[0].x &&
-            wall[0].y != selectedLine[0].y &&
-            wall[1].x != selectedLine[1].x &&
+            (wall.length == 2 && wall[0].x != selectedLine[0].x) ||
+            wall[0].y != selectedLine[0].y ||
+            wall[1].x != selectedLine[1].x ||
             wall[1].y != selectedLine[1].y
           ) {
             updatedCoordinates.push(wall);
