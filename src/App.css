@@ -22,6 +22,7 @@
 .canvas-pg {
   /*position: absolute;
   width: 100%; */
+  border-radius: 20px;
 }
 
 .toolbar__list {

@@ -8,6 +8,8 @@ import { EventToggleContext } from "./../../context/event-toggle.context";
 import { CanvasContext } from "./../../context/canvas.context";
 import { UndoRedoContext } from "./../../context/undoredo.context";
 
+import Image from "../../assets/Sample_Floorplan.jpg";
+
 type CanvasProps = React.DetailedHTMLProps<
   React.CanvasHTMLAttributes<HTMLCanvasElement>,
   HTMLCanvasElement
@@ -49,9 +51,22 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     ]);
   };
 
+  const addImage = (context: CanvasRenderingContext2D) => {
+    var background = new window.Image();
+    background.src = "./../assets/Sample_Floorplan.jpg";
+    console.log("image ouside" + width, height);
+    // Make sure the image is loaded first otherwise nothing will draw.
+    background.onload = function () {
+      console.log("image" + width, height);
+      context.drawImage(background, width, height);
+    };
+  };
+
   const drawWalls = () => {
     if (!context) return;
     context?.clearRect(0, 0, width, height);
+
+    //addImage(context);
 
     context.lineWidth = 5;
     const highLightVal = highLight[0];
@@ -295,6 +310,10 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     return () => window.removeEventListener("keydown", deleteLine);
   }, [selectedLine, undoStack, redoStack]);
 
+  useEffect(() => {
+    addImage(context!);
+  }, [context]);
+
   return (
     <canvas
       className="canvas-pg"
@@ -303,6 +322,12 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       ref={canvasRef}
       onClick={handleCanvasClick}
       onMouseMove={(e) => handleCanvasMouseMove(e)}
+      style={{
+        backgroundImage: "url(" + Image + ")",
+        backgroundSize: "contain",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center",
+      }}
     />
   );
 };
