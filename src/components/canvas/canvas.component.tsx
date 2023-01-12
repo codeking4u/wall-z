@@ -50,10 +50,19 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     ]);
   };
 
+  const drawWallEndpoints = (
+    start: coordinatesTypes,
+    end: coordinatesTypes
+  ) => {
+    if (!context) return;
+    context.rect(start.x - 3, start.y - 3, 6, 6);
+    context.rect(end.x - 3, end.y - 3, 6, 6);
+  };
+
   const drawWalls = () => {
     if (!context) return;
     context?.clearRect(0, 0, width, height);
-
+    let selectionCount = 0;
     context.lineWidth = 7;
     const highLightVal = highLight[0];
 
@@ -67,11 +76,13 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
         context.beginPath();
         context.moveTo(start.x, start.y);
         context.lineTo(end.x, end.y);
+
         context.lineCap = "round";
         context.strokeStyle = "orange";
 
         if (
           highLightVal &&
+          selectionCount == 0 &&
           context.isPointInStroke(highLightVal.x, highLightVal.y)
         ) {
           context.strokeStyle = "rgb(0 151 229)";
@@ -79,6 +90,9 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
             { x: start.x, y: start.y },
             { x: end.x, y: end.y },
           ]);
+          drawWallEndpoints(start, end);
+
+          selectionCount += 1;
         }
         context.stroke();
       }
@@ -122,7 +136,6 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       }
 
       setLastReference([{ x: x, y: y }]);
-      console.log("wallCoordinates " + JSON.stringify(wallCoordinates));
     }
 
     if (toolEnabled == "DELETE_WALL") {
@@ -178,22 +191,16 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
   useEffect(() => {
     const deleteLine = (e: any) => {
-      console.log(e.code);
-
       if (["8", "46", "Backspace", "Delete"].includes(e.code)) {
-        console.log("selectedLine");
-        console.log(selectedLine);
         if (!selectedLine.length) return;
 
         /* del and backspace */
         const updatedCoordinates: coordinatesTypes[][] = [];
-        console.log("wallCoordinates");
-        console.log(wallCoordinates);
-        wallCoordinates.forEach((wall) => {
-          console.log(wall, selectedLine);
 
+        wallCoordinates.forEach((wall) => {
+          if (wall.length != 2) return;
           if (
-            (wall.length == 2 && wall[0].x != selectedLine[0].x) ||
+            wall[0].x != selectedLine[0].x ||
             wall[0].y != selectedLine[0].y ||
             wall[1].x != selectedLine[1].x ||
             wall[1].y != selectedLine[1].y
@@ -201,9 +208,6 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
             updatedCoordinates.push(wall);
           }
         });
-
-        console.log("updatedCoordinates");
-        console.log([...updatedCoordinates]);
 
         setWallCoordinates([...updatedCoordinates]);
 
@@ -214,6 +218,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       if (["27", "Escape"].includes(e.code)) {
         setCurrentPosition([]);
         setLastReference([]);
+        setWallCoordinates((cords) => cords.filter((wall) => wall.length == 2));
       }
 
       if (e.key === "y" && (e.ctrlKey || e.metaKey)) {
@@ -229,7 +234,6 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       if (e.key === "z" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         /* UNDO */
-        console.log("undo");
         if (undoStack.length) {
           const lastWall = undoStack[undoStack.length - 1];
           setWallCoordinates((coords) => [...coords, lastWall]);
@@ -252,7 +256,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     window.addEventListener("keydown", deleteLine);
 
     return () => window.removeEventListener("keydown", deleteLine);
-  }, [selectedLine, undoStack, redoStack]);
+  }, [selectedLine, undoStack, redoStack, wallCoordinates]);
 
   return (
     <canvas
