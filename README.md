@@ -2,6 +2,10 @@
 
 Assignment web application in which users are able to draw walls on top of floor plan images.
 
+### Preview
+
+![A preview image](./src//assets/preview.png)
+
 ## Technologies used:
 
 1. React with TypeScript for UI.
@@ -21,3 +25,9 @@ Assignment web application in which users are able to draw walls on top of floor
 3. For testing
 
 ### `npm run test`
+
+4. For building
+
+### `npm run build`
+
+Hosted on netlify: https://floor-planning.netlify.app/
