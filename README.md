@@ -1,6 +1,6 @@
 # Project Wall-Z
 
-Assignment web application in which users are able to draw walls on top of floor plan images.
+This web application tool lets you draw walls on top of the floor plan images. It makes reviewing and correcting floor plans quick and easy.
 
 ### Preview
 
